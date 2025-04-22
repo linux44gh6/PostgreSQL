@@ -1,6 +1,6 @@
 -- Active: 1744364707698@@127.0.0.1@5432@bookstore_db
 -- create book table
-CREATE Table book(
+CREATE Table books(
     id serial PRIMARY KEY,
     title varchar(255) NOT NULL,
     author varchar(255) NOT NULL,
@@ -8,7 +8,7 @@ CREATE Table book(
     stock INTEGER NOT NULL,
     price numeric(10, 2) NOT NULL
 );
- SELECT * from book;
+ SELECT * from books;
 
 -- create customer table
 CREATE TABLE customers(
@@ -25,7 +25,7 @@ ALTER Table customers
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
-    book_id INTEGER REFERENCES book(id) ON DELETE CASCADE,
+    book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -33,7 +33,7 @@ SELECT * from orders;
 
 -- //! -- 1. Insert a new book into the book table.
 
-INSERT INTO book (id, title, author, price, stock, published_year) VALUES
+INSERT INTO books (id, title, author, price, stock, published_year) VALUES
 (1, 'The Pragmatic Programmer', 'Andrew Hunt', 40.00, 10, 1999),
 (2, 'Clean Code', 'Robert C. Martin', 35.00, 5, 2008),
 (3, 'You Don''t Know JS', 'Kyle Simpson', 30.00, 8, 2014),
@@ -53,11 +53,11 @@ INSERT INTO orders (id, customer_id, book_id, quantity, order_date) VALUES
 (3, 1, 3, 2, '2024-03-05');
 
 --problem-1:
-SELECT * FROM book
+SELECT * FROM books
     WHERE stock = 0;
 
 --problem-2:
- SELECT * FROM book
+ SELECT * FROM books
  ORDER BY price DESC LIMIT 1;
 
 --problem-3:
@@ -69,7 +69,7 @@ GROUP BY customers.name;
 
 --problem-4:
 SELECT SUM(book.price* orders.quantity) as total_revenue FROM orders
- JOIN book ON orders.book_id = book.id;
+ JOIN books ON orders.book_id = book.id;
 
 
 --problem-5:
@@ -83,10 +83,12 @@ HAVING SUM(orders.quantity) > 1;
 SELECT round(avg(price),2) as avg_book_price from  book;
 
 --problem-7--update the price of all books published before 2000 by 10%:
-UPDATE book
+UPDATE books
 SET price=price*1.10
 WHERE published_year<2000;
 
 --problem-8--delete all who did not place any orders:
 DELETE FROM customers
-WHERE id NOT IN (SELECT DISTINCT customer_id FROM orders);
+WHERE id
+ NOT IN 
+(SELECT DISTINCT customer_id FROM orders);
