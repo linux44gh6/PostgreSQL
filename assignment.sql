@@ -4,10 +4,13 @@ CREATE Table books(
     id serial PRIMARY KEY,
     title varchar(255) NOT NULL,
     author varchar(255) NOT NULL,
-    published_year date NOT NULL,
+    published_year INT NOT NULL,
     stock INTEGER NOT NULL,
     price numeric(10, 2) NOT NULL
 );
+-- DROP TABLE books;
+-- DROP TABLE customers;
+-- DROP TABLE orders;
  SELECT * from books;
 
 -- create customer table
@@ -18,17 +21,16 @@ CREATE TABLE customers(
     joined_date date NOT NULL
 );
 SELECT * from customers;
-ALTER Table customers
- RENAME COLUMN customer_id to id;
 
 -- create orders table
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
-    customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
+    customer_id INTEGER REFERENCES customers(customer_id) ON DELETE CASCADE,
     book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 SELECT * from orders;
 
 -- //! -- 1. Insert a new book into the book table.
@@ -41,10 +43,12 @@ INSERT INTO books (id, title, author, price, stock, published_year) VALUES
 (5, 'Database Design Principles', 'Jane Smith', 20.00, 0, 2018);
 
 -- //! -- 2. Insert a new customer into the customers table.
-INSERT INTO customers (id, name, email, joined_date) VALUES
-(1, 'Alice', 'alice@email.com', '2023-01-10'),
-(2, 'Bob', 'bob@email.com', '2022-05-15'),
-(3, 'Charlie', 'charlie@email.com', '2023-06-20');
+INSERT INTO customers ( name, email, joined_date) VALUES
+( 'Alice', 'alice@email.com', '2023-01-10'),
+( 'Bob', 'bob@email.com', '2022-05-15'),
+( 'Charlie', 'charlie@email.com', '2023-06-20');
+
+SELECT * FROM customers;
 
 -- //! -- 3. Insert a new order into the orders table.
 INSERT INTO orders (id, customer_id, book_id, quantity, order_date) VALUES
@@ -52,6 +56,8 @@ INSERT INTO orders (id, customer_id, book_id, quantity, order_date) VALUES
 (2, 2, 1, 1, '2024-02-20'),
 (3, 1, 3, 2, '2024-03-05');
 
+
+ SELECT * FROM orders;
 --problem-1:
 SELECT * FROM books
     WHERE stock = 0;
@@ -63,24 +69,24 @@ SELECT * FROM books
 --problem-3:
 SELECT customers.name, SUM(orders.quantity) AS total_orders
 FROM orders
-JOIN customers ON orders.customer_id = customers.id
+JOIN customers ON orders.customer_id = customers.customer_id
 GROUP BY customers.name;
 
 
 --problem-4:
-SELECT SUM(book.price* orders.quantity) as total_revenue FROM orders
- JOIN books ON orders.book_id = book.id;
+SELECT SUM(books.price* orders.quantity) as total_revenue FROM orders
+ JOIN books ON orders.book_id = books.id;
 
 
 --problem-5:
 SELECT customers.name, SUM(orders.quantity) AS total_orders
 FROM orders
-JOIN customers ON orders.customer_id = customers.id
+JOIN customers ON orders.customer_id = customers.customer_id
 GROUP BY customers.name
 HAVING SUM(orders.quantity) > 1;
 
 --problem-6:
-SELECT round(avg(price),2) as avg_book_price from  book;
+SELECT round(avg(price),2) as avg_book_price from  books;
 
 --problem-7--update the price of all books published before 2000 by 10%:
 UPDATE books
